@@ -32,7 +32,7 @@ function exercise() {
   // Your code here
   const tx = Transaction.fromHex(transactionHex)
 
-  const tdID = tx.hash("hex")
+  const tdID = tx.id("hex")
   const numberOfInputs = tx.inputs.length
   const numberOfOutputs = tx.outputs.length
 
