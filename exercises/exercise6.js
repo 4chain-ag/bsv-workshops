@@ -1,4 +1,4 @@
-const { P2PKH, PrivateKey, Transaction } = require('@bsv/sdk');
+const { P2PKH, PrivateKey, Transaction, SatoshisPerKilobyte } = require('@bsv/sdk');
 
 /*
     Generate a new transaction based on UTXO from the previous exercise
@@ -17,6 +17,8 @@ const { P2PKH, PrivateKey, Transaction } = require('@bsv/sdk');
 
   const parentTx = Transaction.fromHex(parentTxHex);
 
+  console.log("Input satoshis", parentTx.outputs[0].satoshis)
+
   const newTx = new Transaction();
   newTx.addInput({
     sourceTransaction: parentTx,
@@ -27,7 +29,7 @@ const { P2PKH, PrivateKey, Transaction } = require('@bsv/sdk');
   const newAddress = "1JUJ8XZpLKTfXTHC6XVTE6VVYVVQfEE4oP"
   const lockingScript = new P2PKH().lock(newAddress)
 
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 8; i++) {
     newTx.addOutput({
       satoshis: 2,
       lockingScript: lockingScript
@@ -35,10 +37,11 @@ const { P2PKH, PrivateKey, Transaction } = require('@bsv/sdk');
   }
 
   newTx.addOutput({
-    satoshis: 1,
+    change: true,
     lockingScript: new P2PKH().lock(privateKey.toAddress()),
   });
 
+  await newTx.fee(new SatoshisPerKilobyte(1))
   await newTx.sign();
 
   console.log("Fee", newTx.getFee());
