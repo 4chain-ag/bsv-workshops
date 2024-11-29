@@ -44,6 +44,7 @@ const { P2PKH, PrivateKey, Transaction } = require('@bsv/sdk');
   console.log("Fee", newTx.getFee());
   console.log("Change", newTx.outputs[newTx.outputs.length - 1].satoshis);
 
+  console.log("new transaction ID:", newTx.id('hex'));
   console.log("new transaction", newTx.toHex());
 })();
 
