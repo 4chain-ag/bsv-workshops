@@ -1,4 +1,4 @@
-const { P2PKH, PrivateKey, Transaction, Script, Utils, OP } = require('@bsv/sdk');
+const { P2PKH, PrivateKey, Transaction, Utils, LockingScript, OP } = require('@bsv/sdk');
 
 /*
    Using first unspent output from the transaction from the previous exercise,
@@ -7,6 +7,30 @@ const { P2PKH, PrivateKey, Transaction, Script, Utils, OP } = require('@bsv/sdk'
     - output should be a OP_RETURN output with the message "Hello, world!"
     - sign the transaction and print it in hex format
  */
+
+class OpReturnTemplate {
+  lock(data) {
+    const script = [
+      {op: OP.OP_FALSE},
+      {op: OP.OP_RETURN}
+    ]
+
+    if (typeof data === 'string') {
+      data = [data]
+    }
+
+    for (const entry of data.filter(Boolean)) {
+      const arr = Utils.toArray(entry, 'utf8')
+      script.push({op: arr.length, data: arr})
+    }
+
+    return new LockingScript(script)
+  }
+
+  unlock() {
+    throw new Error('Unlock is not supported for OpReturn scripts')
+  }
+}
 
 (async () => {
 
@@ -23,14 +47,11 @@ const { P2PKH, PrivateKey, Transaction, Script, Utils, OP } = require('@bsv/sdk'
     unlockingScriptTemplate: new P2PKH().unlock(privateKey),
   });
 
-  const lockingScript = new Script();
-  lockingScript.writeOpCode(OP.OP_FALSE);
-  lockingScript.writeOpCode(OP.OP_RETURN);
-  lockingScript.writeBin(Utils.toArray('Hello, world!', 'utf8'));
+  const script = new OpReturnTemplate().lock('Hello, world!', 'utf8');
 
   newTx.addOutput({
     satoshis: 0,
-    lockingScript: lockingScript,
+    lockingScript: script,
   });
 
   await newTx.sign();
@@ -40,5 +61,4 @@ const { P2PKH, PrivateKey, Transaction, Script, Utils, OP } = require('@bsv/sdk'
   console.log('new transaction ID:', newTx.id('hex'));
   console.log('new transaction', newTx.toHex());
 })();
-
 
