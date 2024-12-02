@@ -1,4 +1,5 @@
-const { P2PKH, PrivateKey, Transaction, LockingScript, OP, Script, UnlockingScript, Utils } = require('@bsv/sdk');
+const { P2PKH, PrivateKey, Transaction } = require('@bsv/sdk');
+const { OpReturnTemplate, MathPuzzleTemplate } = require('./templates');
 
 /*
   Create a new transaction based on one of the UTXOs from the previous exercise
@@ -10,55 +11,6 @@ const { P2PKH, PrivateKey, Transaction, LockingScript, OP, Script, UnlockingScri
   - in the unlocking script, two numbers should be provided that sum up to 8
  */
 
-class MathPuzzleTemplate {
-  lock() {
-    const s = new Script();
-    s.writeOpCode(OP.OP_ADD);
-    s.writeNumber(8);
-    s.writeOpCode(OP.OP_EQUAL);
-
-    return new LockingScript(s.chunks);
-  }
-
-  unlock() {
-    const s = new Script();
-    s.writeNumber(3);
-    s.writeNumber(5);
-
-    return {
-      sign: (tx, inputIndex) => new Promise((resolve) => {
-        resolve(new UnlockingScript(s.chunks));
-      }),
-      estimateLength: (tx, inputIndex) => new Promise((resolve) => {
-        resolve(2);
-      }),
-    };
-  }
-}
-
-class OpReturnTemplate {
-  lock(data) {
-    const script = [
-      { op: OP.OP_FALSE },
-      { op: OP.OP_RETURN },
-    ];
-
-    if (typeof data === 'string') {
-      data = [data];
-    }
-
-    for (const entry of data.filter(Boolean)) {
-      const arr = Utils.toArray(entry, 'utf8');Ń
-      script.push({ op: arr.length, data: arr });
-    }
-
-    return new LockingScript(script);
-  }
-
-  unlock() {
-    throw new Error('Unlock is not supported for OpReturn scripts');
-  }
-}
 
 (async () => {
 
